@@ -22,7 +22,7 @@ export const MOCK_ITEMS: Instrument[] = [
     name: 'Batería Pearl Roadshow',
     subtitle: 'Pearl · Percusión',
     price: 3200000,
-    imageUri: 'https://picsum.photos/seed/bateria/300/200',
+    imageUri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTcT4-pLhJVjtj4eq3c6GTR5IAgVxsXNWL_OdqVilUnJcJpTUHgeGOj9R4&s=10',
     inStock: false,
   },
   {
