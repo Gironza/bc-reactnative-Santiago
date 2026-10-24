@@ -24,8 +24,8 @@ pnpm start        # escanear el QR con Expo Go
 - TypeScript estricto con la interfaz `Instrument`.
 
 <p align="center">
-  <img src="starter/assets/screenshots/home.png" width="250" />
-  <img src="starter/assets/screenshots/pressed.png" width="250" />
+  <img src="assets/screenshots/foto1.png" width="250" />
+  <img src="assets/screenshots/foto2.png" width="250" />
 </p>
 
 ## Estructura
