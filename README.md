@@ -23,6 +23,11 @@ pnpm start        # escanear el QR con Expo Go
 - Estilos con `StyleSheet.create`, sin estilos inline ni `position: 'absolute'`.
 - TypeScript estricto con la interfaz `Instrument`.
 
+<p align="center">
+  <img src="starter/assets/screenshots/home.png" width="250" />
+  <img src="starter/assets/screenshots/pressed.png" width="250" />
+</p>
+
 ## Estructura
 ```
 starter/
