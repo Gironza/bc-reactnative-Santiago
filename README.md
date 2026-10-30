@@ -1,4 +1,4 @@
-# 🎸 Tienda de Instrumentos Musicales — Semana 02
+# 🎸 Casa Musical — Semana 02
 
 App móvil hecha con **React Native + Expo + TypeScript** que lista el catálogo de una tienda de instrumentos musicales y permite filtrarlo en tiempo real.
 
