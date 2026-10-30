@@ -11,16 +11,28 @@ import {
   TouchableWithoutFeedback,
   ListRenderItem,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { Item } from '../types';
 import { ITEMS } from '../data/mockData';
 import { ItemCard } from '../components/ItemCard';
 import { COLORS, TYPOGRAPHY, SPACING, RADIUS } from '../theme';
+import type { HomeStackParamList } from '../navigation/types';
+
+// Tipo del navigation hook para este Stack
+type HomeScreenNavigationProp = NativeStackNavigationProp<
+  HomeStackParamList,
+  'HomeList'
+>;
 
 function ItemSeparator(): React.JSX.Element {
   return <View style={styles.separator} />;
 }
 
 export function HomeScreen(): React.JSX.Element {
+  const navigation = useNavigation<HomeScreenNavigationProp>();
   const [query, setQuery] = useState<string>('');
 
   const filteredItems = useMemo(() => {
@@ -33,6 +45,22 @@ export function HomeScreen(): React.JSX.Element {
         item.category.toLowerCase().includes(lower),
     );
   }, [query]);
+
+  // Navega al detalle pasando los datos del instrumento como params
+  const handleItemPress = useCallback(
+    (item: Item): void => {
+      navigation.navigate('HomeDetail', {
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        brand: item.brand,
+        price: item.price,
+        category: item.category,
+        inStock: item.inStock,
+      });
+    },
+    [navigation],
+  );
 
   const renderEmpty = useCallback(
     () => (
@@ -47,59 +75,65 @@ export function HomeScreen(): React.JSX.Element {
   );
 
   const renderItem: ListRenderItem<Item> = useCallback(
-    ({ item }) => (
-      <ItemCard item={item} onPress={() => console.log('Seleccionado:', item.name)} />
-    ),
-    [],
+    ({ item }) => <ItemCard item={item} onPress={handleItemPress} />,
+    [handleItemPress],
   );
 
   return (
-    <KeyboardAvoidingView
-      style={styles.kvContainer}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={styles.inner}>
-          {/* Header fijo */}
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}>Casa Musical</Text>
-            <Text style={styles.headerSubtitle}>Tienda de instrumentos musicales</Text>
-          </View>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <KeyboardAvoidingView
+        style={styles.kvContainer}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={styles.inner}>
+            {/* Header fijo */}
+            <View style={styles.header}>
+              <Text style={styles.headerTitle}>Casa Musical</Text>
+              <Text style={styles.headerSubtitle}>
+                Tienda de instrumentos musicales
+              </Text>
+            </View>
 
-          {/* Búsqueda fija */}
-          <View style={styles.searchContainer}>
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Buscar instrumento, marca o categoría..."
-              placeholderTextColor={COLORS.textMuted}
-              value={query}
-              onChangeText={setQuery}
-              keyboardType="default"
-              returnKeyType="search"
-              clearButtonMode="while-editing"
-              autoCorrect={false}
-              autoCapitalize="none"
+            {/* Búsqueda fija */}
+            <View style={styles.searchContainer}>
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Buscar instrumento, marca o categoría..."
+                placeholderTextColor={COLORS.textMuted}
+                value={query}
+                onChangeText={setQuery}
+                keyboardType="default"
+                returnKeyType="search"
+                clearButtonMode="while-editing"
+                autoCorrect={false}
+                autoCapitalize="none"
+              />
+            </View>
+
+            {/* Solo esto se desplaza */}
+            <FlatList
+              data={filteredItems}
+              keyExtractor={(item) => item.id}
+              renderItem={renderItem}
+              ListEmptyComponent={renderEmpty}
+              ItemSeparatorComponent={ItemSeparator}
+              contentContainerStyle={styles.listContent}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="on-drag"
             />
           </View>
-
-          {/* Solo esto se desplaza */}
-          <FlatList
-            data={filteredItems}
-            keyExtractor={(item) => item.id}
-            renderItem={renderItem}
-            ListEmptyComponent={renderEmpty}
-            ItemSeparatorComponent={ItemSeparator}
-            contentContainerStyle={styles.listContent}
-            keyboardShouldPersistTaps="handled"
-            keyboardDismissMode="on-drag"
-          />
-        </View>
-      </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
   kvContainer: {
     flex: 1,
     backgroundColor: COLORS.background,
