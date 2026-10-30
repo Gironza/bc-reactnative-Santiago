@@ -1,6 +1,11 @@
 import React from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { SafeAreaView, StyleSheet } from 'react-native';
+import {
+  SafeAreaView,
+  StyleSheet,
+  Platform,
+  StatusBar as RNStatusBar,
+} from 'react-native';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { COLORS } from './src/theme';
 
@@ -17,5 +22,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+    paddingTop: Platform.OS === 'android' ? RNStatusBar.currentHeight ?? 0 : 0,
   },
 });

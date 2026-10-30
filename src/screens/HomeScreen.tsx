@@ -16,14 +16,12 @@ import { ITEMS } from '../data/mockData';
 import { ItemCard } from '../components/ItemCard';
 import { COLORS, TYPOGRAPHY, SPACING, RADIUS } from '../theme';
 
-
 function ItemSeparator(): React.JSX.Element {
   return <View style={styles.separator} />;
 }
 
 export function HomeScreen(): React.JSX.Element {
   const [query, setQuery] = useState<string>('');
-
 
   const filteredItems = useMemo(() => {
     const lower = query.trim().toLowerCase();
@@ -62,6 +60,13 @@ export function HomeScreen(): React.JSX.Element {
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.inner}>
+          {/* Header fijo */}
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>Casa Musical</Text>
+            <Text style={styles.headerSubtitle}>Tienda de instrumentos musicales</Text>
+          </View>
+
+          {/* Búsqueda fija */}
           <View style={styles.searchContainer}>
             <TextInput
               style={styles.searchInput}
@@ -77,6 +82,7 @@ export function HomeScreen(): React.JSX.Element {
             />
           </View>
 
+          {/* Solo esto se desplaza */}
           <FlatList
             data={filteredItems}
             keyExtractor={(item) => item.id}
@@ -100,6 +106,23 @@ const styles = StyleSheet.create({
   },
   inner: {
     flex: 1,
+  },
+  header: {
+    paddingHorizontal: SPACING.base,
+    paddingTop: SPACING.md,
+    paddingBottom: SPACING.md,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  headerTitle: {
+    fontSize: TYPOGRAPHY.size.xxl,
+    fontWeight: TYPOGRAPHY.weight.bold,
+    color: COLORS.textPrimary,
+  },
+  headerSubtitle: {
+    fontSize: TYPOGRAPHY.size.base,
+    color: COLORS.textSecondary,
+    marginTop: SPACING.xs,
   },
   searchContainer: {
     paddingHorizontal: SPACING.base,

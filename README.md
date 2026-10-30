@@ -25,7 +25,7 @@ El catálogo tiene **12 instrumentos** en `src/data/mockData.ts`, repartidos en 
 
 ## 📱 Pantallas
 
-![Pantalla principal](./assets/screenshot-home.png)
+![Pantalla principal](assets/week-2.jpeg)
 
 **HomeScreen** (única pantalla):
 - Barra de búsqueda en la parte superior.
