@@ -1,21 +1,21 @@
 {
-  "name": "Tienda Musical",
+  "name": "mi-app-semana02",
   "version": "1.0.0",
-  "main": "expo/AppEntry",
+  "main": "App.tsx",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios"
   },
   "dependencies": {
-    "expo": "~58.0.19",
-    "expo-status-bar": "~58.0.4",
-    "react": "19.3.0",
-    "react-native": "0.88.0"
+    "expo": "57.0.4",
+    "expo-status-bar": "57.0.0",
+    "react": "19.2.3",
+    "react-native": "0.86.0"
   },
   "devDependencies": {
     "@babel/core": "7.29.7",
-    "@types/react": "~19.3.0",
+    "@types/react": "19.2.17",
     "typescript": "6.0.3"
   }
 }

@@ -1,75 +1,92 @@
 import React from 'react';
-import { View, Text, Image, Pressable, StyleSheet } from 'react-native';
-import { Instrument } from '../types';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { Item } from '../types';
+import { COLORS, TYPOGRAPHY, SPACING, RADIUS } from '../theme';
 
 interface ItemCardProps {
-  item: Instrument;
-  onPress: (item: Instrument) => void;
+  item: Item;
+  onPress: (item: Item) => void;
 }
 
+/**
+ * Tarjeta reutilizable para mostrar un elemento del dominio.
+ * Personaliza el contenido según los campos de tu interfaz Item.
+ */
 export function ItemCard({ item, onPress }: ItemCardProps): React.JSX.Element {
   return (
-    <View style={styles.card}>
-      <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
+    <Pressable
+      style={({ pressed }) => [
+        styles.card,
+        pressed && styles.cardPressed,
+      ]}
+      onPress={() => onPress(item)}
+      accessibilityRole="button"
+      accessibilityLabel={item.name}
+    >
+      {/* Nombre principal del elemento */}
+      <Text style={styles.itemName}>{item.name}</Text>
 
-      <View style={styles.cardBody}>
-        <Text style={styles.cardName}>{item.name}</Text>
-        <Text style={styles.cardSubtitle}>{item.subtitle}</Text>
+      {/* TODO: Mostrar los campos adicionales de tu dominio */}
+      {/* Ejemplos:
+        Biblioteca:
+          <Text style={styles.fieldText}>{item.author}</Text>
+          <Text style={styles.fieldText}>{item.available ? 'Disponible' : 'Prestado'}</Text>
 
-        <View style={styles.row}>
-          <Text style={styles.price}>${item.price.toLocaleString('es-CO')}</Text>
-          <Text style={item.inStock ? styles.stockOn : styles.stockOff}>
-            {item.inStock ? 'Disponible' : 'Agotado'}
-          </Text>
+        Farmacia:
+          <Text style={styles.fieldText}>${item.price}</Text>
+          <Text style={styles.fieldText}>Stock: {item.stock}</Text>
+
+        Gimnasio:
+          <Text style={styles.fieldText}>Plan: {item.plan}</Text>
+          <Text style={styles.fieldText}>Vence: {item.expiresAt}</Text>
+      */}
+
+      {/* TODO: Si tu dominio tiene un badge de estado/categoría, agrégalo aquí */}
+      {/* Ejemplo:
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>{item.category}</Text>
         </View>
-
-        <Pressable
-          style={({ pressed }) => [
-            styles.button,
-            !item.inStock && styles.buttonDisabled,
-            pressed && styles.buttonPressed,
-          ]}
-          onPress={() => onPress(item)}
-        >
-          <Text style={styles.buttonText}>
-            {item.inStock ? 'Agregar al carrito' : 'Avisarme'}
-          </Text>
-        </Pressable>
-      </View>
-    </View>
+      */}
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#161b22',
-    borderRadius: 12,
-    marginBottom: 12,
-    overflow: 'hidden',
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.md,
+    padding: SPACING.base,
+    marginHorizontal: SPACING.base,
+    marginVertical: SPACING.xs,
     borderWidth: 1,
-    borderColor: '#30363d',
+    borderColor: COLORS.border,
   },
-  cardImage: { width: '100%', height: 160 },
-  cardBody: { padding: 16, gap: 4 },
-  cardName: { fontSize: 18, fontWeight: 'bold', color: '#ffffff' },
-  cardSubtitle: { fontSize: 14, color: '#8b949e' },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 8,
+  cardPressed: {
+    backgroundColor: COLORS.surfaceAlt,
   },
-  price: { fontSize: 20, fontWeight: '700', color: '#58a6ff' },
-  stockOn: { fontSize: 12, color: '#3fb950', fontStyle: 'italic' },
-  stockOff: { fontSize: 12, color: '#f85149', fontStyle: 'italic' },
-  button: {
-    marginTop: 12,
-    backgroundColor: '#238636',
-    paddingVertical: 10,
-    borderRadius: 8,
-    alignItems: 'center',
+  itemName: {
+    fontSize: TYPOGRAPHY.size.md,
+    fontWeight: TYPOGRAPHY.weight.semibold,
+    color: COLORS.textPrimary,
+    marginBottom: SPACING.xs,
   },
-  buttonDisabled: { backgroundColor: '#6e7681' },
-  buttonPressed: { opacity: 0.6, transform: [{ scale: 0.97 }] },
-  buttonText: { color: '#ffffff', fontWeight: '600', fontSize: 14 },
+  fieldText: {
+    fontSize: TYPOGRAPHY.size.sm,
+    color: COLORS.textSecondary,
+    marginBottom: 2,
+  },
+  badge: {
+    alignSelf: 'flex-start',
+    marginTop: SPACING.sm,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 3,
+    borderRadius: RADIUS.full,
+    backgroundColor: COLORS.accentDim,
+  },
+  badgeText: {
+    fontSize: TYPOGRAPHY.size.xs,
+    fontWeight: TYPOGRAPHY.weight.semibold,
+    color: COLORS.accent,
+    textTransform: 'capitalize',
+  },
 });

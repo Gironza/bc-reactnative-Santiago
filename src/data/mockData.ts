@@ -1,36 +1,68 @@
-import { Instrument } from '../types';
+import { Item } from '../types';
 
-export const MOCK_ITEMS: Instrument[] = [
+// ============================================
+// MOCK DATA — Semana 02
+// Reemplaza estos items genéricos con datos
+// reales de tu dominio asignado.
+//
+// REQUISITO: mínimo 10 items
+// ============================================
+
+// TODO: Renombra ITEMS a algo descriptivo de tu dominio
+//       Ejemplo: BOOKS, MEDICINES, MEMBERS, DISHES...
+// TODO: Actualiza el tipo Item con los campos de tu dominio
+// TODO: Rellena con datos reales y variados de tu dominio
+
+export const ITEMS: Item[] = [
   {
     id: '1',
-    name: 'Guitarra Acústica FG800',
-    subtitle: 'Yamaha · Cuerdas',
-    price: 1250000,
-    imageUri: 'https://alfasoni.com/519541-home_default/yamaha-fg800-bs.jpg',
-    inStock: true,
+    name: 'Elemento 01',
+    // TODO: agregar campos de tu dominio
   },
   {
     id: '2',
-    name: 'Teclado PSR-E373',
-    subtitle: 'Yamaha · Teclados',
-    price: 1890000,
-    imageUri: 'https://www.pianosbogota.com/wp-content/uploads/2026/04/teclado-yamaha-psr-e483-Pianos-Bogota-Colombia_1.webp',
-    inStock: true,
+    name: 'Elemento 02',
+    // TODO: agregar campos de tu dominio
   },
   {
     id: '3',
-    name: 'Batería Pearl Roadshow',
-    subtitle: 'Pearl · Percusión',
-    price: 3200000,
-    imageUri: 'https://takarhi.com/wp-content/uploads/2022/02/BYP11-1c.jpg',
-    inStock: false,
+    name: 'Elemento 03',
+    // TODO: agregar campos de tu dominio
   },
   {
     id: '4',
-    name: 'Violín 4/4 Stentor',
-    subtitle: 'Stentor · Cuerdas',
-    price: 980000,
-    imageUri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6MRaKCAGJcu-sJl01YeK3pgP_XaxVtt4rhHXczWgIQC55Xqkjxb9XWjk&s=10',
-    inStock: true,
+    name: 'Elemento 04',
+    // TODO: agregar campos de tu dominio
   },
+  {
+    id: '5',
+    name: 'Elemento 05',
+    // TODO: agregar campos de tu dominio
+  },
+  {
+    id: '6',
+    name: 'Elemento 06',
+    // TODO: agregar campos de tu dominio
+  },
+  {
+    id: '7',
+    name: 'Elemento 07',
+    // TODO: agregar campos de tu dominio
+  },
+  {
+    id: '8',
+    name: 'Elemento 08',
+    // TODO: agregar campos de tu dominio
+  },
+  {
+    id: '9',
+    name: 'Elemento 09',
+    // TODO: agregar campos de tu dominio
+  },
+  {
+    id: '10',
+    name: 'Elemento 10',
+    // TODO: agregar campos de tu dominio
+  },
+  // TODO: puedes agregar más items para hacer la demo más rica
 ];
