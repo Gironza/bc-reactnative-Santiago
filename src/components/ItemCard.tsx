@@ -8,45 +8,36 @@ interface ItemCardProps {
   onPress: (item: Item) => void;
 }
 
-/**
- * Tarjeta reutilizable para mostrar un elemento del dominio.
- * Personaliza el contenido según los campos de tu interfaz Item.
- */
+
+function formatPrice(price: number): string {
+  return `$${price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
+}
+
 export function ItemCard({ item, onPress }: ItemCardProps): React.JSX.Element {
   return (
     <Pressable
-      style={({ pressed }) => [
-        styles.card,
-        pressed && styles.cardPressed,
-      ]}
+      style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
       onPress={() => onPress(item)}
       accessibilityRole="button"
       accessibilityLabel={item.name}
     >
-      {/* Nombre principal del elemento */}
-      <Text style={styles.itemName}>{item.name}</Text>
-
-      {/* TODO: Mostrar los campos adicionales de tu dominio */}
-      {/* Ejemplos:
-        Biblioteca:
-          <Text style={styles.fieldText}>{item.author}</Text>
-          <Text style={styles.fieldText}>{item.available ? 'Disponible' : 'Prestado'}</Text>
-
-        Farmacia:
-          <Text style={styles.fieldText}>${item.price}</Text>
-          <Text style={styles.fieldText}>Stock: {item.stock}</Text>
-
-        Gimnasio:
-          <Text style={styles.fieldText}>Plan: {item.plan}</Text>
-          <Text style={styles.fieldText}>Vence: {item.expiresAt}</Text>
-      */}
-
-      {/* TODO: Si tu dominio tiene un badge de estado/categoría, agrégalo aquí */}
-      {/* Ejemplo:
+      <View style={styles.header}>
+        <Text style={styles.itemName}>{item.name}</Text>
         <View style={styles.badge}>
           <Text style={styles.badgeText}>{item.category}</Text>
         </View>
-      */}
+      </View>
+
+      <Text style={styles.fieldText}>{item.brand}</Text>
+
+      <View style={styles.footer}>
+        <Text style={styles.price}>{formatPrice(item.price)} COP</Text>
+        <Text
+          style={[styles.stock, item.inStock ? styles.inStock : styles.outOfStock]}
+        >
+          {item.inStock ? 'Disponible' : 'Agotado'}
+        </Text>
+      </View>
     </Pressable>
   );
 }
@@ -64,20 +55,24 @@ const styles = StyleSheet.create({
   cardPressed: {
     backgroundColor: COLORS.surfaceAlt,
   },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+  },
   itemName: {
+    flex: 1,
+    marginRight: SPACING.sm,
     fontSize: TYPOGRAPHY.size.md,
     fontWeight: TYPOGRAPHY.weight.semibold,
     color: COLORS.textPrimary,
-    marginBottom: SPACING.xs,
   },
   fieldText: {
     fontSize: TYPOGRAPHY.size.sm,
     color: COLORS.textSecondary,
-    marginBottom: 2,
+    marginTop: SPACING.xs,
   },
   badge: {
-    alignSelf: 'flex-start',
-    marginTop: SPACING.sm,
     paddingHorizontal: SPACING.sm,
     paddingVertical: 3,
     borderRadius: RADIUS.full,
@@ -88,5 +83,26 @@ const styles = StyleSheet.create({
     fontWeight: TYPOGRAPHY.weight.semibold,
     color: COLORS.accent,
     textTransform: 'capitalize',
+  },
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: SPACING.md,
+  },
+  price: {
+    fontSize: TYPOGRAPHY.size.base,
+    fontWeight: TYPOGRAPHY.weight.bold,
+    color: COLORS.accent,
+  },
+  stock: {
+    fontSize: TYPOGRAPHY.size.sm,
+    fontWeight: TYPOGRAPHY.weight.medium,
+  },
+  inStock: {
+    color: COLORS.success,
+  },
+  outOfStock: {
+    color: COLORS.error,
   },
 });
