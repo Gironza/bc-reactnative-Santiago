@@ -1,0 +1,111 @@
+import React from 'react';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
+
+import { formatPrice } from '../components/ItemCard';
+import { FAVORITES } from '../data/mockData';
+import { COLORS, RADIUS, SPACING, TYPOGRAPHY } from '../theme';
+import type { Item } from '../types';
+
+function ItemSeparator(): React.JSX.Element {
+  return <View style={styles.separator} />;
+}
+
+export function FavoritesScreen(): React.JSX.Element {
+  function renderFavorite({ item }: { item: Item }): React.JSX.Element {
+    return (
+      <View style={styles.card}>
+        <Text style={styles.heartIcon}>♥</Text>
+        <View style={styles.cardContent}>
+          <Text style={styles.itemName}>{item.name}</Text>
+          <Text style={styles.fieldText}>{item.brand}</Text>
+          <Text style={styles.itemDescription} numberOfLines={2}>
+            {item.description}
+          </Text>
+          <Text style={styles.price}>{formatPrice(item.price)} COP</Text>
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <FlatList
+        data={FAVORITES}
+        keyExtractor={(item) => item.id}
+        renderItem={renderFavorite}
+        contentContainerStyle={styles.list}
+        ItemSeparatorComponent={ItemSeparator}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>
+              Aún no tienes instrumentos favoritos
+            </Text>
+          </View>
+        }
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
+  list: {
+    paddingHorizontal: SPACING.base,
+    paddingTop: SPACING.base,
+    paddingBottom: SPACING.base,
+  },
+  card: {
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.md,
+    padding: SPACING.base,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: SPACING.md,
+  },
+  heartIcon: {
+    fontSize: TYPOGRAPHY.size.lg,
+    color: COLORS.error,
+    marginTop: 2,
+  },
+  cardContent: {
+    flex: 1,
+  },
+  itemName: {
+    fontSize: TYPOGRAPHY.size.base,
+    fontWeight: TYPOGRAPHY.weight.semibold,
+    color: COLORS.textPrimary,
+    marginBottom: SPACING.xs,
+  },
+  fieldText: {
+    fontSize: TYPOGRAPHY.size.sm,
+    color: COLORS.textSecondary,
+    marginBottom: SPACING.xs,
+  },
+  itemDescription: {
+    fontSize: TYPOGRAPHY.size.sm,
+    color: COLORS.textSecondary,
+    lineHeight: 18,
+  },
+  price: {
+    fontSize: TYPOGRAPHY.size.base,
+    fontWeight: TYPOGRAPHY.weight.bold,
+    color: COLORS.accent,
+    marginTop: SPACING.sm,
+  },
+  separator: {
+    height: SPACING.sm,
+  },
+  emptyContainer: {
+    paddingTop: SPACING.xxl,
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: TYPOGRAPHY.size.base,
+    color: COLORS.textMuted,
+  },
+});
