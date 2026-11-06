@@ -15,5 +15,3 @@ export const ITEMS: Item[] = [
   { id: '12', name: 'Armónica Marine Band', description: 'Armónica diatónica de 10 agujeros, clásica en el blues y el folk.', brand: 'Hohner', price: 190000, category: 'viento', inStock: true },
 ];
 
-// Subconjunto de instrumentos para la pestaña Favoritos
-export const FAVORITES: Item[] = [ITEMS[0], ITEMS[4], ITEMS[9]];

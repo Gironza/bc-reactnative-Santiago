@@ -2,6 +2,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 
+import { useFavoritesStore } from '../stores/favoritesStore';
 import { DetailScreen } from '../screens/DetailScreen';
 import { FavoritesScreen } from '../screens/FavoritesScreen';
 import { HomeScreen } from '../screens/HomeScreen';
@@ -41,6 +42,8 @@ function HomeStackNavigator(): React.JSX.Element {
 const Tab = createBottomTabNavigator<RootTabParamList>();
 
 export function RootNavigator(): React.JSX.Element {
+
+  const favoritesCount = useFavoritesStore((s) => s.ids.length);
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -74,7 +77,11 @@ export function RootNavigator(): React.JSX.Element {
       <Tab.Screen
         name="Favorites"
         component={FavoritesScreen}
-        options={{ title: 'Favoritos', tabBarLabel: 'Favoritos' }}
+        options={{
+          title: 'Favoritos',
+          tabBarLabel: 'Favoritos',
+          tabBarBadge: favoritesCount > 0 ? favoritesCount : undefined,
+        }}
       />
     </Tab.Navigator>
   );
