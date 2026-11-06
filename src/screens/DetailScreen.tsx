@@ -1,18 +1,34 @@
 import React from 'react';
 import { useRoute } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { formatPrice } from '../components/ItemCard';
+import { ITEMS } from '../data/mockData';
+import { useFavoritesStore } from '../stores/favoritesStore';
 import { COLORS, RADIUS, SPACING, TYPOGRAPHY } from '../theme';
 import type { HomeStackParamList } from '../navigation/types';
 
-// Tipo del route hook para leer los params tipados de esta pantalla
 type DetailScreenRouteProp = RouteProp<HomeStackParamList, 'HomeDetail'>;
 
 export function DetailScreen(): React.JSX.Element {
-  const route = useRoute<DetailScreenRouteProp>();
-  const { id, name, description, brand, price, category, inStock } = route.params;
+  const { id } = useRoute<DetailScreenRouteProp>().params;
+  const item = ITEMS.find((i) => i.id === id);
+
+  // Los hooks van antes de cualquier return anticipado
+  const isFavorite = useFavoritesStore((s) => s.ids.includes(id));
+  const addFavorite = useFavoritesStore((s) => s.addFavorite);
+  const removeFavorite = useFavoritesStore((s) => s.removeFavorite);
+
+  if (!item) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.fieldValue}>Instrumento no encontrado</Text>
+      </View>
+    );
+  }
+
+  const { name, description, brand, price, category, inStock } = item;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -39,12 +55,7 @@ export function DetailScreen(): React.JSX.Element {
 
       <View style={styles.field}>
         <Text style={styles.fieldLabel}>Disponibilidad</Text>
-        <Text
-          style={[
-            styles.fieldValue,
-            inStock ? styles.inStock : styles.outOfStock,
-          ]}
-        >
+        <Text style={[styles.fieldValue, inStock ? styles.inStock : styles.outOfStock]}>
           {inStock ? 'Disponible' : 'Agotado'}
         </Text>
       </View>
@@ -53,19 +64,27 @@ export function DetailScreen(): React.JSX.Element {
         <Text style={styles.fieldLabel}>Descripción</Text>
         <Text style={styles.fieldValue}>{description}</Text>
       </View>
+
+      <Pressable
+        onPress={() => (isFavorite ? removeFavorite(id) : addFavorite(id))}
+        style={({ pressed }) => [
+          styles.saveButton,
+          isFavorite && styles.saveButtonActive,
+          pressed && styles.saveButtonPressed,
+        ]}
+        accessibilityRole="button"
+      >
+        <Text style={[styles.saveButtonText, isFavorite && styles.saveButtonTextActive]}>
+          {isFavorite ? 'Quitar de favoritos' : 'Guardar en favoritos'}
+        </Text>
+      </Pressable>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  content: {
-    padding: SPACING.base,
-    gap: SPACING.md,
-  },
+  container: { flex: 1, backgroundColor: COLORS.background },
+  content: { padding: SPACING.base, gap: SPACING.md },
   name: {
     fontSize: TYPOGRAPHY.size.xl,
     fontWeight: TYPOGRAPHY.weight.bold,
@@ -100,17 +119,27 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
-  fieldValue: {
+  fieldValue: { fontSize: TYPOGRAPHY.size.base, color: COLORS.textPrimary },
+  capitalize: { textTransform: 'capitalize' },
+  inStock: { color: COLORS.success },
+  outOfStock: { color: COLORS.error },
+  saveButton: {
+    backgroundColor: COLORS.accent,
+    borderRadius: RADIUS.md,
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
+    marginTop: SPACING.sm,
+  },
+  saveButtonActive: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: COLORS.error,
+  },
+  saveButtonPressed: { opacity: 0.8 },
+  saveButtonText: {
     fontSize: TYPOGRAPHY.size.base,
-    color: COLORS.textPrimary,
+    fontWeight: TYPOGRAPHY.weight.bold,
+    color: COLORS.background,
   },
-  capitalize: {
-    textTransform: 'capitalize',
-  },
-  inStock: {
-    color: COLORS.success,
-  },
-  outOfStock: {
-    color: COLORS.error,
-  },
+  saveButtonTextActive: { color: COLORS.error },
 });

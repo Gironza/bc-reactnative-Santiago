@@ -1,4 +1,6 @@
 import React from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useFavoritesStore } from '../stores/favoritesStore';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Item } from '../types';
 import { COLORS, TYPOGRAPHY, SPACING, RADIUS } from '../theme';
@@ -14,6 +16,9 @@ export function formatPrice(price: number): string {
 }
 
 export function ItemCard({ item, onPress }: ItemCardProps): React.JSX.Element {
+  const isFavorite = useFavoritesStore((s) => s.ids.includes(item.id));
+  const addFavorite = useFavoritesStore((s) => s.addFavorite);
+  const removeFavorite = useFavoritesStore((s) => s.removeFavorite);
   return (
     <Pressable
       style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
@@ -26,6 +31,19 @@ export function ItemCard({ item, onPress }: ItemCardProps): React.JSX.Element {
         <View style={styles.badge}>
           <Text style={styles.badgeText}>{item.category}</Text>
         </View>
+        <Pressable
+          onPress={() => (isFavorite ? removeFavorite(item.id) : addFavorite(item.id))}
+          hitSlop={8}
+          style={styles.heartButton}
+          accessibilityRole="button"
+          accessibilityLabel={isFavorite ? 'Quitar de favoritos' : 'Guardar en favoritos'}
+        >
+          <Ionicons
+            name={isFavorite ? 'heart' : 'heart-outline'}
+            size={22}
+            color={isFavorite ? COLORS.error : COLORS.textSecondary}
+          />
+        </Pressable>
       </View>
 
       <Text style={styles.fieldText}>{item.brand}</Text>
@@ -104,5 +122,8 @@ const styles = StyleSheet.create({
   },
   outOfStock: {
     color: COLORS.error,
+  },
+  heartButton: {
+  marginLeft: SPACING.sm,
   },
 });
