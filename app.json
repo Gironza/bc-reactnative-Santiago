@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Tienda Musical",
-    "slug": "Tienda Musical",
+    "slug": "tienda-musical",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
