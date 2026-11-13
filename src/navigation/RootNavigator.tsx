@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 
 import { useFavoritesStore } from '../stores/favoritesStore';
+import { CreateScreen } from '../screens/CreateScreen';
 import { DetailScreen } from '../screens/DetailScreen';
 import { FavoritesScreen } from '../screens/FavoritesScreen';
 import { HomeScreen } from '../screens/HomeScreen';
@@ -33,6 +34,12 @@ function HomeStackNavigator(): React.JSX.Element {
         name="HomeDetail"
         component={DetailScreen}
         options={({ route }) => ({ title: route.params.name })}
+      />
+
+       <HomeStack.Screen
+        name="HomeCreate"
+        component={CreateScreen}
+        options={{ title: 'Nuevo instrumento' }}
       />
     </HomeStack.Navigator>
   );
