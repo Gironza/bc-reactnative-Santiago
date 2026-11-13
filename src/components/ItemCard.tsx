@@ -2,12 +2,12 @@ import React from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useFavoritesStore } from '../stores/favoritesStore';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { Item } from '../types';
+import type { Instrument } from '../types';
 import { COLORS, TYPOGRAPHY, SPACING, RADIUS } from '../theme';
 
 interface ItemCardProps {
-  item: Item;
-  onPress: (item: Item) => void;
+  item: Instrument;
+  onPress: (item: Instrument) => void;
 }
 
 
