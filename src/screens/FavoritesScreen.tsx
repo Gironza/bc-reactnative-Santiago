@@ -1,12 +1,13 @@
 import React, { useMemo } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { formatPrice } from '../components/ItemCard';
-import { ITEMS } from '../data/mockData';
+import { useInstruments } from '../hooks/useInstruments';
+import { getErrorMessage } from '../services/api';
 import { useFavoritesStore } from '../stores/favoritesStore';
 import { COLORS, RADIUS, SPACING, TYPOGRAPHY } from '../theme';
-import type { Item } from '../types';
+import type { Instrument } from '../types';
 
 function ItemSeparator(): React.JSX.Element {
   return <View style={styles.separator} />;
@@ -18,15 +19,18 @@ export function FavoritesScreen(): React.JSX.Element {
   const removeFavorite = useFavoritesStore((s) => s.removeFavorite);
   const clearFavorites = useFavoritesStore((s) => s.clearFavorites);
 
-  const favorites = useMemo(
-    () =>
-      ids
-        .map((id) => ITEMS.find((i) => i.id === id))
-        .filter((i): i is Item => i !== undefined),
-    [ids],
-  );
+  // El catálogo viene de la API (TanStack Query); el store solo guarda los ids
+  const { data, isLoading, isError, error, refetch } = useInstruments();
 
-  function renderFavorite({ item }: { item: Item }): React.JSX.Element {
+  // Se ignoran los ids que ya no existen en la API
+  const favorites = useMemo(() => {
+    if (!data) return [];
+    return ids
+      .map((id) => data.find((i) => i.id === id))
+      .filter((i): i is Instrument => i !== undefined);
+  }, [ids, data]);
+
+  function renderFavorite({ item }: { item: Instrument }): React.JSX.Element {
     return (
       <View style={styles.card}>
         <View style={styles.cardContent}>
@@ -44,6 +48,31 @@ export function FavoritesScreen(): React.JSX.Element {
           accessibilityLabel={`Quitar ${item.name} de favoritos`}
         >
           <Ionicons name="heart" size={22} color={COLORS.error} />
+        </Pressable>
+      </View>
+    );
+  }
+
+  // Sin ids guardados no hay nada que esperar de la red
+  if (ids.length > 0 && isLoading) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color={COLORS.accent} />
+      </View>
+    );
+  }
+
+  if (ids.length > 0 && isError && !data) {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.errorTitle}>No se pudieron cargar tus favoritos</Text>
+        <Text style={styles.centeredText}>{getErrorMessage(error)}</Text>
+        <Pressable
+          style={styles.retryButton}
+          onPress={() => void refetch()}
+          accessibilityRole="button"
+        >
+          <Text style={styles.retryButtonText}>Reintentar</Text>
         </Pressable>
       </View>
     );
@@ -115,6 +144,36 @@ const styles = StyleSheet.create({
     marginTop: SPACING.sm,
   },
   separator: { height: SPACING.sm },
+  centered: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: SPACING.md,
+    paddingHorizontal: SPACING.xxl,
+    backgroundColor: COLORS.background,
+  },
+  centeredText: {
+    fontSize: TYPOGRAPHY.size.sm,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+  },
+  errorTitle: {
+    fontSize: TYPOGRAPHY.size.md,
+    fontWeight: TYPOGRAPHY.weight.semibold,
+    color: COLORS.error,
+    textAlign: 'center',
+  },
+  retryButton: {
+    backgroundColor: COLORS.accent,
+    borderRadius: RADIUS.md,
+    paddingHorizontal: SPACING.xl,
+    paddingVertical: SPACING.sm,
+  },
+  retryButtonText: {
+    fontSize: TYPOGRAPHY.size.base,
+    fontWeight: TYPOGRAPHY.weight.bold,
+    color: COLORS.background,
+  },
   clearButton: { alignSelf: 'flex-end', paddingBottom: SPACING.md },
   clearText: {
     fontSize: TYPOGRAPHY.size.sm,

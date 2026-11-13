@@ -1,10 +1,18 @@
 import React from 'react';
 import { useRoute } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 import { formatPrice } from '../components/ItemCard';
-import { ITEMS } from '../data/mockData';
+import { useInstrument } from '../hooks/useInstruments';
+import { getErrorMessage } from '../services/api';
 import { useFavoritesStore } from '../stores/favoritesStore';
 import { COLORS, RADIUS, SPACING, TYPOGRAPHY } from '../theme';
 import type { HomeStackParamList } from '../navigation/types';
@@ -13,17 +21,33 @@ type DetailScreenRouteProp = RouteProp<HomeStackParamList, 'HomeDetail'>;
 
 export function DetailScreen(): React.JSX.Element {
   const { id } = useRoute<DetailScreenRouteProp>().params;
-  const item = ITEMS.find((i) => i.id === id);
 
   // Los hooks van antes de cualquier return anticipado
+  const { data: item, isLoading, isError, error, refetch } = useInstrument(id);
   const isFavorite = useFavoritesStore((s) => s.ids.includes(id));
   const addFavorite = useFavoritesStore((s) => s.addFavorite);
   const removeFavorite = useFavoritesStore((s) => s.removeFavorite);
 
-  if (!item) {
+  if (isLoading) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.fieldValue}>Instrumento no encontrado</Text>
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color={COLORS.accent} />
+      </View>
+    );
+  }
+
+  if (isError || !item) {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.errorTitle}>No se pudo cargar el instrumento</Text>
+        <Text style={styles.centeredText}>{getErrorMessage(error)}</Text>
+        <Pressable
+          style={styles.retryButton}
+          onPress={() => void refetch()}
+          accessibilityRole="button"
+        >
+          <Text style={styles.retryButtonText}>Reintentar</Text>
+        </Pressable>
       </View>
     );
   }
@@ -62,7 +86,7 @@ export function DetailScreen(): React.JSX.Element {
 
       <View style={styles.field}>
         <Text style={styles.fieldLabel}>Descripción</Text>
-        <Text style={styles.fieldValue}>{description}</Text>
+        <Text style={styles.fieldValue}>{description || 'Sin descripción'}</Text>
       </View>
 
       <Pressable
@@ -85,6 +109,36 @@ export function DetailScreen(): React.JSX.Element {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
   content: { padding: SPACING.base, gap: SPACING.md },
+  centered: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: SPACING.md,
+    paddingHorizontal: SPACING.xxl,
+    backgroundColor: COLORS.background,
+  },
+  centeredText: {
+    fontSize: TYPOGRAPHY.size.sm,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+  },
+  errorTitle: {
+    fontSize: TYPOGRAPHY.size.md,
+    fontWeight: TYPOGRAPHY.weight.semibold,
+    color: COLORS.error,
+    textAlign: 'center',
+  },
+  retryButton: {
+    backgroundColor: COLORS.accent,
+    borderRadius: RADIUS.md,
+    paddingHorizontal: SPACING.xl,
+    paddingVertical: SPACING.sm,
+  },
+  retryButtonText: {
+    fontSize: TYPOGRAPHY.size.base,
+    fontWeight: TYPOGRAPHY.weight.bold,
+    color: COLORS.background,
+  },
   name: {
     fontSize: TYPOGRAPHY.size.xl,
     fontWeight: TYPOGRAPHY.weight.bold,
