@@ -1,11 +1,15 @@
-export type ItemCategory = 'cuerda' | 'viento' | 'percusión' | 'teclado';
+export type InstrumentCategory = 'cuerda' | 'viento' | 'percusión' | 'teclado';
 
-export interface Item {
+// Modelo del recurso /instruments de la API (MockAPI)
+export interface Instrument {
   id: string;
   name: string;
   description: string;
   brand: string;
   price: number;
-  category: ItemCategory;
+  category: InstrumentCategory;
   inStock: boolean;
 }
+
+// Lo que se envía en el POST: el id lo asigna el servidor
+export type CreateInstrumentPayload = Omit<Instrument, 'id'>;
