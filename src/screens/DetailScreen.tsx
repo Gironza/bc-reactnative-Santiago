@@ -2,7 +2,6 @@ import React from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-
 import {
   ActivityIndicator,
   Pressable,
@@ -25,6 +24,7 @@ type DetailNavProp = NativeStackNavigationProp<HomeStackParamList, 'HomeDetail'>
 export function DetailScreen(): React.JSX.Element {
   const { id } = useRoute<DetailScreenRouteProp>().params;
   const navigation = useNavigation<DetailNavProp>();
+
   // Los hooks van antes de cualquier return anticipado
   const { data: item, isLoading, isError, error, refetch } = useInstrument(id);
   const isFavorite = useFavoritesStore((s) => s.ids.includes(id));
@@ -91,6 +91,14 @@ export function DetailScreen(): React.JSX.Element {
         <Text style={styles.fieldLabel}>Descripción</Text>
         <Text style={styles.fieldValue}>{description || 'Sin descripción'}</Text>
       </View>
+
+      <Pressable
+        onPress={() => navigation.navigate('HomeEdit', { id, name })}
+        style={({ pressed }) => [styles.editButton, pressed && styles.saveButtonPressed]}
+        accessibilityRole="button"
+      >
+        <Text style={styles.editButtonText}>Editar instrumento</Text>
+      </Pressable>
 
       <Pressable
         onPress={() => (isFavorite ? removeFavorite(id) : addFavorite(id))}
@@ -180,7 +188,7 @@ const styles = StyleSheet.create({
   capitalize: { textTransform: 'capitalize' },
   inStock: { color: COLORS.success },
   outOfStock: { color: COLORS.error },
-    editButton: {
+  editButton: {
     borderRadius: RADIUS.md,
     paddingVertical: SPACING.md,
     alignItems: 'center',
