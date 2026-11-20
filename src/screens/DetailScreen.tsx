@@ -1,6 +1,8 @@
 import React from 'react';
-import { useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
 import {
   ActivityIndicator,
   Pressable,
@@ -18,10 +20,11 @@ import { COLORS, RADIUS, SPACING, TYPOGRAPHY } from '../theme';
 import type { HomeStackParamList } from '../navigation/types';
 
 type DetailScreenRouteProp = RouteProp<HomeStackParamList, 'HomeDetail'>;
+type DetailNavProp = NativeStackNavigationProp<HomeStackParamList, 'HomeDetail'>;
 
 export function DetailScreen(): React.JSX.Element {
   const { id } = useRoute<DetailScreenRouteProp>().params;
-
+  const navigation = useNavigation<DetailNavProp>();
   // Los hooks van antes de cualquier return anticipado
   const { data: item, isLoading, isError, error, refetch } = useInstrument(id);
   const isFavorite = useFavoritesStore((s) => s.ids.includes(id));
@@ -177,6 +180,19 @@ const styles = StyleSheet.create({
   capitalize: { textTransform: 'capitalize' },
   inStock: { color: COLORS.success },
   outOfStock: { color: COLORS.error },
+    editButton: {
+    borderRadius: RADIUS.md,
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
+    marginTop: SPACING.sm,
+    borderWidth: 1,
+    borderColor: COLORS.accent,
+  },
+  editButtonText: {
+    fontSize: TYPOGRAPHY.size.base,
+    fontWeight: TYPOGRAPHY.weight.bold,
+    color: COLORS.accent,
+  },
   saveButton: {
     backgroundColor: COLORS.accent,
     borderRadius: RADIUS.md,

@@ -11,4 +11,8 @@ export type HomeStackParamList = {
     name: string;
   };
   HomeCreate: undefined;
+  HomeEdit: {
+    id: string;
+    name: string;
+  };
 };

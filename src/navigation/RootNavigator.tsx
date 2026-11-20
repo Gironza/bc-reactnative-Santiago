@@ -1,6 +1,7 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import { EditScreen } from '../screens/EditScreen';
 
 import { useFavoritesStore } from '../stores/favoritesStore';
 import { CreateScreen } from '../screens/CreateScreen';
@@ -40,6 +41,12 @@ function HomeStackNavigator(): React.JSX.Element {
         name="HomeCreate"
         component={CreateScreen}
         options={{ title: 'Nuevo instrumento' }}
+      />
+
+      <HomeStack.Screen
+        name="HomeEdit"
+        component={EditScreen}
+        options={{ title: 'Editar instrumento' }}
       />
     </HomeStack.Navigator>
   );
