@@ -1,8 +1,8 @@
-# 🎸 Casa Musical — Semana 04
+# 🎸 Casa Musical — Semana 05
 
-App móvil hecha con **React Native + Expo + TypeScript** que muestra el catálogo de una tienda de instrumentos musicales. En esta semana se agregó **estado global con Zustand**: los instrumentos favoritos se guardan en un store compartido entre pestañas, se muestran en un badge en tiempo real y se **persisten entre sesiones** con AsyncStorage.
+App móvil hecha con **React Native + Expo + TypeScript** que muestra el catálogo de una tienda de instrumentos musicales. En esta semana el catálogo deja de ser un arreglo local y pasa a **consumirse desde una API REST** con **Axios** y **TanStack Query v5**: lista, detalle, creación de instrumentos y manejo de los estados de red (carga, error, vacío y pull-to-refresh).
 
-> Rama: `week-4` · Bootcamp de React Native · Semana 04: Estado global con Zustand
+> Rama: `week-5` · Bootcamp de React Native · Semana 05: Networking y TanStack Query v5
 
 ---
 
@@ -12,7 +12,7 @@ App móvil hecha con **React Native + Expo + TypeScript** que muestra el catálo
 
 | Campo | Tipo | Descripción |
 |-------|------|-------------|
-| `id` | `string` | Identificador único |
+| `id` | `string` | Identificador único (lo asigna el servidor) |
 | `name` | `string` | Nombre del instrumento |
 | `description` | `string` | Descripción corta del instrumento |
 | `brand` | `string` | Marca |
@@ -20,32 +20,67 @@ App móvil hecha con **React Native + Expo + TypeScript** que muestra el catálo
 | `category` | `'cuerda' \| 'viento' \| 'percusión' \| 'teclado'` | Categoría |
 | `inStock` | `boolean` | Disponibilidad |
 
-El catálogo tiene **12 instrumentos** en `src/data/mockData.ts`, repartidos en las 4 categorías, y 3 de ellos están agotados. Los favoritos ya no son una lista fija: los elige el usuario y viven en el store.
+---
+
+## 🌐 API
+
+El catálogo vive en un recurso `instruments` creado en **[MockAPI](https://mockapi.io/)**, con los mismos 12 instrumentos que tenía la app (`scripts/instruments.seed.json`).
+
+| Método | Endpoint | Uso en la app |
+|--------|----------|---------------|
+| `GET` | `/instruments` | Lista del catálogo y de favoritos (`useInstruments`) |
+| `GET` | `/instruments/:id` | Detalle de un instrumento (`useInstrument`) |
+| `POST` | `/instruments` | Crear un instrumento (`useCreateInstrument`) |
+
+### Configuración
+
+1. Copia `.env.example` como `.env.local` y pega la URL base de tu proyecto en MockAPI:
+
+   ```bash
+   EXPO_PUBLIC_API_URL=https://<id-del-proyecto>.mockapi.io/api/v1
+   ```
+
+   `.env.local` está en `.gitignore`: la URL no se sube al repositorio.
+
+2. Carga los 12 instrumentos iniciales (solo la primera vez, necesita Node 18+):
+
+   ```bash
+   node scripts/seed.mjs
+   ```
+
+3. Inicia la app limpiando la caché para que Expo lea la variable de entorno:
+
+   ```bash
+   pnpm start -c
+   ```
 
 ---
 
-## 🗃️ Estado global (Zustand)
+## 🔌 Red y caché (Axios + TanStack Query)
 
-El store `useFavoritesStore` (`src/stores/favoritesStore.ts`) guarda únicamente los **ids** de los instrumentos favoritos.
-
-| Elemento | Descripción |
-|----------|-------------|
-| `ids` | Arreglo de ids de instrumentos guardados |
-| `addFavorite(id)` | Agrega un id, sin permitir duplicados |
-| `removeFavorite(id)` | Quita un id |
-| `clearFavorites()` | Vacía todos los favoritos |
-
-**Persistencia:** el store usa el middleware `persist` con `createJSONStorage(() => AsyncStorage)` y `partialize`, de modo que solo se guarda `ids` y los favoritos sobreviven al cerrar la app.
-
-**Selectores específicos:** ningún componente lee el store completo. Cada uno pide solo lo que necesita:
-
-```ts
-// ¿Este instrumento es favorito? (devuelve un booleano, no una función)
-const isFavorite = useFavoritesStore((s) => s.ids.includes(id));
-
-// Conteo para el badge del tab
-const favoritesCount = useFavoritesStore((s) => s.ids.length);
 ```
+src/
+├── services/
+│   ├── api.ts                  ← Instancia de Axios (baseURL desde .env, timeout, interceptor)
+│   └── instrumentsService.ts   ← Funciones puras: fetchInstruments, fetchInstrumentById, createInstrument
+└── hooks/
+    └── useInstruments.ts       ← useInstruments · useInstrument · useCreateInstrument
+```
+
+- **Capas separadas:** el servicio habla con la API, el hook envuelve `useQuery`/`useMutation` y las pantallas solo renderizan.
+- **`queryKey` centralizada:** `INSTRUMENTS_QUERY_KEY = ['instruments']`, y el detalle usa `['instruments', id]`, de modo que invalidar la lista también refresca los detalles.
+- **`QueryClientProvider` en la raíz:** está en `App.tsx`, por fuera del `NavigationContainer`, con `staleTime` de 2 minutos y 1 reintento.
+- **Mutación con invalidación:** `useCreateInstrument` invalida `['instruments']` en `onSuccess`, por lo que el catálogo se actualiza solo al crear.
+- **Errores legibles:** `getErrorMessage` traduce los errores de Axios (sin conexión, timeout, 404, 5xx) a mensajes para el usuario.
+
+### Estado del servidor vs estado de UI
+
+| Tipo de estado | Dónde vive |
+|----------------|------------|
+| Instrumentos (datos de la API) | **TanStack Query** |
+| Ids de favoritos (preferencia del usuario) | **Zustand** (`favoritesStore`, persistido con AsyncStorage) |
+
+Zustand guarda solo los **ids**; los datos del instrumento se resuelven desde la caché de la query. No se copia ningún dato de la API dentro del store.
 
 ---
 
@@ -56,14 +91,10 @@ NavigationContainer
 └── Tab Navigator (RootNavigator)   ← badge con el conteo de favoritos
     ├── Catálogo → HomeStack (Stack Navigator)
     │   ├── HomeList    → HomeScreen (header, búsqueda y lista)
-    │   └── HomeDetail  → DetailScreen ({ id, name })
+    │   ├── HomeDetail  → DetailScreen ({ id, name })
+    │   └── HomeCreate  → CreateScreen (formulario)
     └── Favoritos → FavoritesScreen
-
-            useFavoritesStore (Zustand + persist)
-            ↑ lee/escribe: ItemCard · DetailScreen · FavoritesScreen · RootNavigator
 ```
-
-Los tipos están en `src/navigation/types.ts`. El detalle recibe solo `{ id, name }` y el resto de los datos se busca en `ITEMS`.
 
 ---
 
@@ -72,49 +103,50 @@ Los tipos están en `src/navigation/types.ts`. El detalle recibe solo `{ id, nam
 <table>
   <tr>
     <td align="center">
-      <img src="assets/week-4-1.jpeg" width="200" alt="Pantalla de catálogo" />
+      <img src="assets/week-5-1.jpeg" width="200" alt="Pantalla de catálogo" />
       <br /><sub><b>Catálogo</b></sub>
     </td>
     <td align="center">
-      <img src="assets/week-4-2.jpeg" width="200" alt="Detalle de un instrumento" />
+      <img src="assets/week-5-2.jpeg" width="200" alt="Detalle de un instrumento" />
       <br /><sub><b>Detalle</b></sub>
     </td>
     <td align="center">
-      <img src="assets/week-4-3.jpeg" width="200" alt="Pantalla de favoritos" />
-      <br /><sub><b>Favoritos</b></sub>
+      <img src="assets/week-5-3.jpeg" width="200" alt="Formulario para crear un instrumento" />
+      <br /><sub><b>Crear</b></sub>
     </td>
   </tr>
 </table>
 
-- **Catálogo (`HomeScreen`):** header fijo, búsqueda y lista de tarjetas. Cada tarjeta tiene un corazón para guardar o quitar el instrumento sin salir de la lista.
-- **Detalle (`DetailScreen`):** muestra los datos completos del instrumento y un botón **Guardar / Quitar de favoritos** que lee y escribe el store.
-- **Favoritos (`FavoritesScreen`):** lista los instrumentos guardados, con corazón para quitar cada uno, botón **Limpiar todo** y mensaje de estado vacío.
-- **Badge:** la pestaña Favoritos muestra el número de guardados y se actualiza al instante desde cualquier pantalla.
+- **Catálogo (`HomeScreen`):** header fijo con botón **+**, búsqueda y lista cargada con `useQuery`. Muestra spinner en la primera carga, un error con botón **Reintentar**, un estado vacío (con y sin búsqueda) y **pull-to-refresh** con `refetch`.
+- **Detalle (`DetailScreen`):** recibe solo `{ id, name }` y pide el instrumento con `useInstrument`. Abre al instante con los datos que ya están en la caché de la lista, y maneja carga y error con **Reintentar**.
+- **Crear (`CreateScreen`):** formulario con nombre, marca, precio, categoría, disponibilidad y descripción. Valida los obligatorios, deshabilita los campos mientras la mutación está `isPending`, muestra el error si el POST falla y vuelve al catálogo al terminar.
+- **Favoritos (`FavoritesScreen`):** cruza los ids del store con la lista de la API. Espera la carga solo si hay ids guardados e ignora los que ya no existen en la API.
 
 ---
 
 ## ✅ Requisitos implementados
 
-- Tab Navigator con las pestañas **Catálogo** y **Favoritos**.
-- Stack anidado en Catálogo: lista → detalle con params tipados.
-- Store Zustand creado con `create<FavoritesStore>()`, sin `any`, con 3 acciones (`addFavorite`, `removeFavorite`, `clearFavorites`).
-- **Badge en el tab** con conteo en tiempo real, sin prop drilling.
-- Botón Guardar / Quitar en el detalle conectado al store.
-- Selectores específicos en todos los componentes (nunca `useStore()` sin selector).
-- Persistencia con `persist` + AsyncStorage + `partialize`.
+- Instancia de Axios centralizada con `baseURL` desde variable de entorno (`EXPO_PUBLIC_API_URL`), `timeout` e interceptor de respuesta.
+- `useQuery` para la lista y para el detalle, con `queryKey` descriptiva en forma de array.
+- `useMutation` para crear, con `invalidateQueries` en `onSuccess`.
+- Estados de **carga**, **error** (con reintento) y **vacío** en la lista.
+- **Pull-to-refresh** con `onRefresh` + `refreshing={isFetching}`.
+- Navegación lista → detalle con params tipados y pantalla de creación.
+- Respuestas tipadas con genéricos (`apiClient.get<Instrument[]>`), sin `as any`.
+- Sin estado de servidor en Zustand: el store solo guarda ids de favoritos.
 - TypeScript sin errores de compilación (`pnpm typecheck`).
-- Se conserva lo de las semanas anteriores: búsqueda con `useMemo`, `FlatList`, theming y estado vacío.
 
 ---
 
 ## 🎨 Decisiones de diseño
 
-- **Persistir solo ids:** si cambia un precio o una descripción en `mockData`, los favoritos guardados no quedan con datos viejos, porque los instrumentos se derivan desde `ITEMS`.
-- **Params mínimos al detalle:** se pasa `{ id, name }` y el detalle busca el resto en `ITEMS`. Así la navegación queda desacoplada de los datos.
-- **Booleano dentro del selector:** se usa `s.ids.includes(id)` en vez de leer una función `isItemSaved` del store. Una función tiene siempre la misma referencia, así que el componente no se re-renderizaría al guardar.
-- **Derivar fuera del selector:** en Favoritos se selecciona el arreglo `ids` y se transforma con `useMemo`. Crear arrays nuevos dentro del selector provoca bucles de render en Zustand 5.
-- **Corazón en la tarjeta:** guardar un favorito no obliga a abrir el detalle. `ItemCard` lee el store directamente, por lo que no hace falta pasar props extra desde la lista.
-- **Versiones exactas:** todas las dependencias están fijadas sin `^` ni `~`, y el archivo `.npmrc` tiene `save-exact=true` para que pnpm no vuelva a agregar comodines.
+- **Servicio + hook + pantalla:** cada capa tiene una sola responsabilidad. Las funciones del servicio no conocen React y los componentes no llaman a Axios directamente.
+- **`placeholderData` en el detalle:** si el usuario llega desde la lista, el detalle muestra al instante lo que ya está en caché mientras se confirma con el servidor.
+- **Error con datos en caché:** si falla un refetch pero ya hay datos, se conserva la lista y se muestra un aviso, en lugar de reemplazarla por una pantalla de error.
+- **Búsqueda en el cliente:** el catálogo es pequeño, así que se filtra con `useMemo` sobre los datos de la query, sin una petición por cada letra.
+- **Validación después del primer envío:** los errores del formulario aparecen al presionar *Crear*, no mientras el usuario todavía está escribiendo.
+- **URL fuera del código:** la URL de la API vive en `.env.local`, ignorado por git. `.env.example` documenta el formato.
+- **Se elimina `mockData.ts`:** los datos iniciales pasan a `scripts/instruments.seed.json`, que solo sirve para poblar la API.
 
 ---
 
@@ -123,26 +155,35 @@ Los tipos están en `src/navigation/types.ts`. El detalle recibe solo `{ id, nam
 ```
 src/
 ├── components/ItemCard.tsx        ← Tarjeta con corazón de favoritos
-├── data/mockData.ts               ← 12 instrumentos
+├── hooks/useInstruments.ts        ← Hooks de TanStack Query
 ├── navigation/
 │   ├── RootNavigator.tsx          ← Tabs + Stack anidado + badge
 │   └── types.ts                   ← Tipos de los navegadores
 ├── screens/
-│   ├── DetailScreen.tsx           ← Detalle + botón Guardar/Quitar
-│   ├── FavoritesScreen.tsx        ← Favoritos desde el store
-│   └── HomeScreen.tsx             ← Header, búsqueda y lista
+│   ├── CreateScreen.tsx           ← Formulario + useMutation
+│   ├── DetailScreen.tsx           ← Detalle con useInstrument
+│   ├── FavoritesScreen.tsx        ← Favoritos (ids del store + datos de la API)
+│   └── HomeScreen.tsx             ← Header, búsqueda y lista con useInstruments
+├── services/
+│   ├── api.ts                     ← Instancia de Axios y getErrorMessage
+│   └── instrumentsService.ts      ← Llamadas a la API
 ├── stores/favoritesStore.ts       ← Store Zustand con persist
 ├── theme/index.ts                 ← COLORS, TYPOGRAPHY, SPACING, RADIUS
-└── types/index.ts                 ← Item e ItemCategory
+└── types/index.ts                 ← Instrument, InstrumentCategory, CreateInstrumentPayload
+scripts/
+├── seed.mjs                       ← Sube los instrumentos iniciales a la API
+└── instruments.seed.json          ← Los 12 instrumentos
 ```
 
 ---
 
 ## 🛠️ Tecnologías
 
-Todas con versión exacta, alineadas al **Expo SDK 57**:
+Alineadas al **Expo SDK 57**. El archivo `.npmrc` tiene `save-exact=true` para que pnpm fije las versiones al instalar; `expo`, `expo-status-bar` y `react-native-screens` conservan `~` porque así los deja `expo install`.
 
-- Expo 57.0.4, React Native 0.86.0, React 19.2.3 y TypeScript 6.0.3
+- Expo ~57.0.32, React Native 0.86.3, React 19.2.3 y TypeScript 6.0.3
+- **Axios** 1.18.1
+- **TanStack Query** 5.101.2
 - React Navigation 7: `native`, `native-stack` y `bottom-tabs`
 - Zustand 5.0.14
 - `@react-native-async-storage/async-storage` 2.2.0
@@ -155,8 +196,12 @@ Todas con versión exacta, alineadas al **Expo SDK 57**:
 
 ```bash
 pnpm install
-pnpm start
+cp .env.example .env.local   # luego edita .env.local con la URL de tu API
+node scripts/seed.mjs        # solo la primera vez
+pnpm start -c
 ```
+
+En Windows, en lugar de `cp` puedes usar `copy .env.example .env.local`.
 
 Luego escanea el QR con **Expo Go (SDK 57)**, o presiona `a` (Android) / `i` (iOS).
 
@@ -176,3 +221,4 @@ pnpm typecheck
 | `week-2` | Lista con búsqueda, `FlatList` y theming |
 | `week-3` | Navegación con Tabs y Stack (React Navigation 7) |
 | `week-4` | Estado global con Zustand, badge y persistencia |
+| `week-5` | Networking con Axios y TanStack Query v5 |
