@@ -1,5 +1,9 @@
 import { apiClient } from './api';
-import type { CreateInstrumentPayload, Instrument } from '../types';
+import type {
+  CreateInstrumentPayload,
+  Instrument,
+  UpdateInstrumentVariables,
+} from '../types';
 
 // Funciones puras que hablan con la API. No conocen React ni TanStack Query.
 
@@ -17,5 +21,13 @@ export async function createInstrument(
   payload: CreateInstrumentPayload,
 ): Promise<Instrument> {
   const response = await apiClient.post<Instrument>('/instruments', payload);
+  return response.data;
+}
+
+export async function updateInstrument({
+  id,
+  data,
+}: UpdateInstrumentVariables): Promise<Instrument> {
+  const response = await apiClient.put<Instrument>(`/instruments/${id}`, data);
   return response.data;
 }

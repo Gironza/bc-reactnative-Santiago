@@ -13,3 +13,9 @@ export interface Instrument {
 
 // Lo que se envía en el POST: el id lo asigna el servidor
 export type CreateInstrumentPayload = Omit<Instrument, 'id'>;
+
+// Para el PUT: el id va en la URL y los campos editables en el cuerpo
+export interface UpdateInstrumentVariables {
+  id: string;
+  data: CreateInstrumentPayload;
+}

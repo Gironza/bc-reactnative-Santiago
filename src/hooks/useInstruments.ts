@@ -4,8 +4,13 @@ import {
   createInstrument,
   fetchInstrumentById,
   fetchInstruments,
+  updateInstrument,
 } from '../services/instrumentsService';
-import type { CreateInstrumentPayload, Instrument } from '../types';
+import type {
+  CreateInstrumentPayload,
+  Instrument,
+  UpdateInstrumentVariables,
+} from '../types';
 
 // Una sola fuente de la queryKey: evita typos al invalidar.
 export const INSTRUMENTS_QUERY_KEY = ['instruments'] as const;
@@ -39,6 +44,19 @@ export function useCreateInstrument() {
 
   return useMutation<Instrument, Error, CreateInstrumentPayload>({
     mutationFn: createInstrument,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: INSTRUMENTS_QUERY_KEY });
+    },
+  });
+}
+
+// Actualizar un instrumento. Invalidar ['instruments'] cubre la lista y también
+// el detalle ['instruments', id], porque TanStack Query invalida por prefijo.
+export function useUpdateInstrument() {
+  const queryClient = useQueryClient();
+
+  return useMutation<Instrument, Error, UpdateInstrumentVariables>({
+    mutationFn: updateInstrument,
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: INSTRUMENTS_QUERY_KEY });
     },
