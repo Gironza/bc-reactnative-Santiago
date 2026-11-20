@@ -37,7 +37,7 @@ El catálogo vive en un recurso `instruments` creado en **[MockAPI](https://mock
 1. Copia `.env.example` como `.env.local` y pega la URL base de tu proyecto en MockAPI:
 
    ```bash
-   EXPO_PUBLIC_API_URL=https://<id-del-proyecto>.mockapi.io/api/v1
+   EXPO_PUBLIC_API_URL=https://<id-del-proyecto>.mockapi.io
    ```
 
    `.env.local` está en `.gitignore`: la URL no se sube al repositorio.
