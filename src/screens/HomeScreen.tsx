@@ -20,6 +20,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import type { Instrument } from '../types';
 import { useInstruments } from '../hooks/useInstruments';
+import { usePreferences } from '../hooks/usePreferences';
 import { getErrorMessage } from '../services/api';
 import { ItemCard } from '../components/ItemCard';
 import { COLORS, TYPOGRAPHY, SPACING, RADIUS } from '../theme';
@@ -40,20 +41,26 @@ export function HomeScreen(): React.JSX.Element {
   const [query, setQuery] = useState<string>('');
 
   const { data, isLoading, isError, isFetching, error, refetch } = useInstruments();
+  const { sortOrder, compactMode } = usePreferences();
 
-  // La búsqueda filtra en cliente sobre lo que ya trajo la query
+  // La búsqueda filtra en cliente y luego se aplica el orden elegido en Ajustes
   const filteredItems = useMemo(() => {
     if (!data) return [];
     const lower = query.trim().toLowerCase();
-    if (!lower) return data;
-    return data.filter(
-      (item) =>
-        item.name.toLowerCase().includes(lower) ||
-        item.brand.toLowerCase().includes(lower) ||
-        item.category.toLowerCase().includes(lower),
+    const filtered = lower
+      ? data.items.filter(
+          (item) =>
+            item.name.toLowerCase().includes(lower) ||
+            item.brand.toLowerCase().includes(lower) ||
+            item.category.toLowerCase().includes(lower),
+        )
+      : data.items;
+    return [...filtered].sort((a, b) =>
+      sortOrder === 'asc'
+        ? a.name.localeCompare(b.name)
+        : b.name.localeCompare(a.name),
     );
-  }, [data, query]);
-
+  }, [data, query, sortOrder]);
   // Al detalle solo viajan id y name; el resto lo pide DetailScreen a la API
   const handleItemPress = useCallback(
     (item: Instrument): void => {
@@ -90,8 +97,10 @@ export function HomeScreen(): React.JSX.Element {
   );
 
   const renderItem: ListRenderItem<Instrument> = useCallback(
-    ({ item }) => <ItemCard item={item} onPress={handleItemPress} />,
-    [handleItemPress],
+    ({ item }) => (
+      <ItemCard item={item} onPress={handleItemPress} compact={compactMode} />
+    ),
+    [handleItemPress, compactMode],
   );
 
   function renderBody(): React.JSX.Element {
@@ -124,11 +133,9 @@ export function HomeScreen(): React.JSX.Element {
 
     return (
       <>
-        {/* Error al refrescar, pero hay datos en caché que seguimos mostrando */}
-        {isError && (
-          <Text style={styles.staleBanner}>
-            No se pudo actualizar. Mostrando los últimos datos guardados.
-          </Text>
+        {/* Los datos vienen de la caché local (AsyncStorage) porque no hubo red */}
+        {data?.source === 'cache' && (
+          <Text style={styles.staleBanner}>⚠️ Mostrando datos sin red</Text>
         )}
         <FlatList
           data={filteredItems}

@@ -8,13 +8,14 @@ import { COLORS, TYPOGRAPHY, SPACING, RADIUS } from '../theme';
 interface ItemCardProps {
   item: Instrument;
   onPress: (item: Instrument) => void;
+  compact?: boolean;
 }
 
 export function formatPrice(price: number): string {
   return `$${price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
 }
 
-export function ItemCard({ item, onPress }: ItemCardProps): React.JSX.Element {
+export function ItemCard({ item, onPress, compact = false }: ItemCardProps): React.JSX.Element {
   const isFavorite = useFavoritesStore((s) => s.ids.includes(item.id));
   const addFavorite = useFavoritesStore((s) => s.addFavorite);
   const removeFavorite = useFavoritesStore((s) => s.removeFavorite);
@@ -45,7 +46,7 @@ export function ItemCard({ item, onPress }: ItemCardProps): React.JSX.Element {
         </Pressable>
       </View>
 
-      <Text style={styles.fieldText}>{item.brand}</Text>
+      {!compact && <Text style={styles.fieldText}>{item.brand}</Text>}
 
       <View style={styles.footer}>
         <Text style={styles.price}>{formatPrice(item.price)} COP</Text>
