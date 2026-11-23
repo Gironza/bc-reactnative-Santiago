@@ -19,16 +19,16 @@ export function FavoritesScreen(): React.JSX.Element {
   const removeFavorite = useFavoritesStore((s) => s.removeFavorite);
   const clearFavorites = useFavoritesStore((s) => s.clearFavorites);
 
-  // El catálogo viene de la API (TanStack Query); el store solo guarda los ids
   const { data, isLoading, isError, error, refetch } = useInstruments();
+  const instruments = data?.items;
 
   // Se ignoran los ids que ya no existen en la API
   const favorites = useMemo(() => {
-    if (!data) return [];
+    if (!instruments) return [];
     return ids
-      .map((id) => data.find((i) => i.id === id))
+      .map((id) => instruments.find((i) => i.id === id))
       .filter((i): i is Instrument => i !== undefined);
-  }, [ids, data]);
+  }, [ids, instruments]);
 
   function renderFavorite({ item }: { item: Instrument }): React.JSX.Element {
     return (

@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import {
   createInstrument,
@@ -9,17 +10,37 @@ import {
 import type {
   CreateInstrumentPayload,
   Instrument,
+  InstrumentsWithSource,
   UpdateInstrumentVariables,
 } from '../types';
 
 // Una sola fuente de la queryKey: evita typos al invalidar.
 export const INSTRUMENTS_QUERY_KEY = ['instruments'] as const;
 
-// Lista completa del catálogo
+// Clave de AsyncStorage para la caché offline del catálogo
+const CACHE_KEY = '@instruments_cache';
+
+// Con red: pide el catálogo y lo guarda en disco.
+// Sin red: devuelve lo último guardado. Si tampoco hay caché, propaga el error.
+async function fetchInstrumentsWithCache(): Promise<InstrumentsWithSource> {
+  try {
+    const items = await fetchInstruments();
+    await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(items));
+    return { items, source: 'network' };
+  } catch (error) {
+    const cached = await AsyncStorage.getItem(CACHE_KEY);
+    if (cached) {
+      return { items: JSON.parse(cached) as Instrument[], source: 'cache' };
+    }
+    throw error;
+  }
+}
+
+// Lista completa del catálogo, con caché offline
 export function useInstruments() {
-  return useQuery<Instrument[]>({
+  return useQuery<InstrumentsWithSource>({
     queryKey: INSTRUMENTS_QUERY_KEY,
-    queryFn: fetchInstruments,
+    queryFn: fetchInstrumentsWithCache,
   });
 }
 
@@ -33,8 +54,8 @@ export function useInstrument(id: string) {
     queryFn: () => fetchInstrumentById(id),
     placeholderData: () =>
       queryClient
-        .getQueryData<Instrument[]>(INSTRUMENTS_QUERY_KEY)
-        ?.find((instrument) => instrument.id === id),
+        .getQueryData<InstrumentsWithSource>(INSTRUMENTS_QUERY_KEY)
+        ?.items.find((instrument) => instrument.id === id),
   });
 }
 

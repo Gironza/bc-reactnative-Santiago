@@ -19,3 +19,11 @@ export interface UpdateInstrumentVariables {
   id: string;
   data: CreateInstrumentPayload;
 }
+
+// De dónde vienen los datos de la lista: red o caché local (offline)
+export type DataSource = 'network' | 'cache';
+
+export interface InstrumentsWithSource {
+  items: Instrument[];
+  source: DataSource;
+}
