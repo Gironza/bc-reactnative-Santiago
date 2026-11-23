@@ -7,6 +7,7 @@ import { CreateScreen } from '../screens/CreateScreen';
 import { DetailScreen } from '../screens/DetailScreen';
 import { FavoritesScreen } from '../screens/FavoritesScreen';
 import { HomeScreen } from '../screens/HomeScreen';
+import { SettingsScreen } from '../screens/SettingsScreen';
 import { COLORS, TYPOGRAPHY } from '../theme';
 import type { HomeStackParamList, RootTabParamList } from './types';
 
@@ -58,8 +59,10 @@ export function RootNavigator(): React.JSX.Element {
           let iconName: keyof typeof Ionicons.glyphMap;
           if (route.name === 'Home') {
             iconName = focused ? 'home' : 'home-outline';
-          } else {
+          } else if (route.name === 'Favorites') {
             iconName = focused ? 'heart' : 'heart-outline';
+          } else {
+            iconName = focused ? 'settings' : 'settings-outline';
           }
           return <Ionicons name={iconName} size={size} color={color} />;
         },
@@ -87,8 +90,13 @@ export function RootNavigator(): React.JSX.Element {
         options={{
           title: 'Favoritos',
           tabBarLabel: 'Favoritos',
-          tabBarBadge: favoritesCount > 0 ? favoritesCount : undefined,
+                    tabBarBadge: favoritesCount > 0 ? favoritesCount : undefined,
         }}
+      />
+      <Tab.Screen
+        name="Settings"
+        component={SettingsScreen}
+        options={{ title: 'Ajustes', tabBarLabel: 'Ajustes' }}
       />
     </Tab.Navigator>
   );
